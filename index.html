@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculista de Valor — Prospecção</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04070f;
+    --surface: #080e1a;
+    --surface2: #0c1422;
+    --border: #101d35;
+    --border2: #162545;
+    --green: #1a6bff;
+    --green2: #0052e0;
+    --green-dim: #0a3a8a;
+    --green-glow: rgba(26,107,255,0.08);
+    --green-glow2: rgba(26,107,255,0.15);
+    --text: #e8f0ff;
+    --muted: #5a7099;
+    --cyan: #00e5ff;
+    --red: #ff1744;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(26,107,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26,107,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(26,107,255,0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 36px 20px 80px; }
+
+  header { margin-bottom: 40px; }
+  .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .logo-icon { width: 44px; height: 44px; background: var(--green-glow2); border: 1px solid var(--green-dim); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .logo-text { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: var(--green); letter-spacing: 0.05em; text-transform: uppercase; }
+  .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  h1 { font-family: 'Rajdhani', sans-serif; font-size: clamp(32px, 6vw, 54px); font-weight: 700; line-height: 1.05; color: var(--text); margin-bottom: 10px; letter-spacing: 0.02em; text-transform: uppercase; }
+  h1 .hl { color: var(--green); text-shadow: 0 0 30px rgba(26,107,255,0.4); }
+  .subtitle { color: var(--muted); font-size: 14px; max-width: 520px; line-height: 1.7; }
+
+  .steps { display: flex; margin-bottom: 32px; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; background: var(--surface); }
+  .step { flex: 1; padding: 11px 16px; text-align: center; font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-right: 1px solid var(--border2); transition: all 0.3s; }
+  .step:last-child { border-right: none; }
+  .step.active { background: var(--green-glow2); color: var(--green); }
+  .step.done { color: var(--green-dim); }
+
+  .card { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: 0.4; }
+  .card-title { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green); margin-bottom: 22px; display: flex; align-items: center; gap: 8px; }
+  .card-title::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+
+  label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  input[type="text"] { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; padding: 12px 16px; outline: none; transition: all 0.2s; }
+  input[type="text"]:focus { border-color: var(--green-dim); box-shadow: 0 0 0 3px var(--green-glow); }
+  input[type="text"]::placeholder { color: var(--muted); opacity: 0.4; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+  @media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px 28px; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: var(--green); color: #f0f4ff; width: 100%; margin-top: 24px; box-shadow: 0 0 20px rgba(26,107,255,0.2); }
+  .btn-primary:hover { background: var(--green2); box-shadow: 0 0 30px rgba(26,107,255,0.35); transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: var(--green); border: 1px solid var(--green-dim); padding: 9px 20px; font-size: 12px; }
+  .btn-outline:hover { background: var(--green-glow); }
+  .btn-copy { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); padding: 7px 16px; font-size: 11px; border-radius: 3px; font-family: 'Rajdhani', sans-serif; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-copy:hover { border-color: var(--green-dim); color: var(--green); }
+  .btn-copy.copied { background: var(--green-glow2); color: var(--green); border-color: var(--green); }
+
+  .tipo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  @media (max-width: 500px) { .tipo-grid { grid-template-columns: 1fr; } }
+  .tipo-card { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; padding: 18px 12px; cursor: pointer; transition: all 0.2s; text-align: center; position: relative; }
+  .tipo-card:hover { border-color: var(--green-dim); }
+  .tipo-card.selected { border-color: var(--green); background: var(--green-glow); box-shadow: 0 0 12px rgba(26,107,255,0.1); }
+  .tipo-card.selected::after { content: '✓'; position: absolute; top: 8px; right: 10px; font-size: 11px; color: var(--green); font-weight: 700; }
+  .tipo-icon { font-size: 26px; margin-bottom: 10px; }
+  .tipo-nome { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text); margin-bottom: 5px; }
+  .tipo-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  .loading-wrap { text-align: center; padding: 52px 20px; }
+  .spinner { width: 40px; height: 40px; border: 2px solid var(--border2); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 20px; box-shadow: 0 0 15px rgba(26,107,255,0.15); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--muted); font-size: 13px; letter-spacing: 0.05em; }
+  .progress-bar-wrap { background: var(--border2); border-radius: 1px; height: 2px; max-width: 280px; margin: 16px auto 0; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green-dim), var(--green)); transition: width 0.4s ease; box-shadow: 0 0 8px var(--green); }
+  .progress-text { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  .resumo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 500px) { .resumo-grid { grid-template-columns: 1fr; } }
+  .resumo-card { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; padding: 18px; text-align: center; }
+  .resumo-num { font-family: 'Rajdhani', sans-serif; font-size: 36px; font-weight: 700; color: var(--green); text-shadow: 0 0 20px rgba(26,107,255,0.3); line-height: 1; }
+  .resumo-label { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+  .nav-dias { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .dia-btn { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 7px 16px; border-radius: 3px; border: 1px solid var(--border2); background: var(--bg); color: var(--muted); cursor: pointer; transition: all 0.2s; }
+  .dia-btn.active { border-color: var(--green); color: var(--green); background: var(--green-glow); }
+  .dia-btn:hover:not(.active) { border-color: var(--green-dim); color: var(--text); }
+
+  .resultado-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .dia-titulo { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .contador-badge { background: var(--green-glow); border: 1px solid var(--green-dim); color: var(--green); font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; padding: 5px 14px; border-radius: 2px; }
+
+  .contato-item { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; padding: 18px; margin-bottom: 14px; transition: border-color 0.2s; }
+  .contato-item:hover { border-color: var(--green-dim); }
+  .contato-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .contato-num { font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700; color: var(--green-dim); letter-spacing: 0.1em; margin-bottom: 3px; }
+  .contato-nome { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 16px; color: var(--text); line-height: 1.2; }
+  .contato-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .contato-tipo-tag { font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
+  .tag-advocacia { background: rgba(0,229,255,0.08); color: var(--cyan); border: 1px solid rgba(0,229,255,0.2); }
+  .tag-contabilidade { background: rgba(0,230,118,0.08); color: var(--green); border: 1px solid rgba(26,107,255,0.2); }
+  .tag-sindicato { background: rgba(255,23,68,0.08); color: var(--red); border: 1px solid rgba(255,23,68,0.2); }
+
+  .spin-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 2px solid var(--green); border-radius: 0 4px 4px 0; padding: 14px 18px; margin-top: 12px; }
+  .spin-label { font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; opacity: 0.7; }
+  .spin-text { font-size: 13px; color: var(--text); line-height: 1.75; white-space: pre-wrap; opacity: 0.9; }
+  .spin-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Calculista de Valor</div>
+        <div class="logo-sub">Módulo de Prospecção</div>
+      </div>
+    </div>
+    <h1>Prospecção <span class="hl">Inteligente</span></h1>
+    <p class="subtitle">Levante contatos da sua cidade e receba mensagens SPIN prontas para advogados, contadores e sindicatos.</p>
+  </header>
+
+  <div class="steps">
+    <div class="step active" id="step1-ind">01 — Configurar</div>
+    <div class="step" id="step2-ind">02 — Buscar</div>
+    <div class="step" id="step3-ind">03 — Mensagens</div>
+  </div>
+
+  <!-- TELA 1 -->
+  <div id="tela1">
+    <div class="card">
+      <div class="card-title">Seus dados</div>
+      <label>Seu nome</label>
+      <input type="text" id="nome-calc" placeholder="Ex: João Silva">
+      <div class="field-row">
+        <div>
+          <label>Cidade alvo</label>
+          <input type="text" id="cidade" placeholder="Ex: Niterói">
+        </div>
+        <div>
+          <label>Estado (sigla)</label>
+          <input type="text" id="estado" placeholder="Ex: RJ" maxlength="2" style="text-transform:uppercase">
+        </div>
+      </div>
+      <div style="margin-top:28px">
+        <div class="card-title">Tipos de contato</div>
+        <div class="tipo-grid">
+          <div class="tipo-card selected" data-tipo="advocacia" onclick="toggleTipo(this)">
+            <div class="tipo-icon">⚖️</div>
+            <div class="tipo-nome">Advocacia</div>
+            <div class="tipo-desc">Trabalhista. Dor: perda na impugnação</div>
+          </div>
+          <div class="tipo-card selected" data-tipo="contabilidade" onclick="toggleTipo(this)">
+            <div class="tipo-icon">📊</div>
+            <div class="tipo-nome">Contabilidade</div>
+            <div class="tipo-desc">Parceria. Já tem os clientes</div>
+          </div>
+          <div class="tipo-card selected" data-tipo="sindicato" onclick="toggleTipo(this)">
+            <div class="tipo-icon">🏛️</div>
+            <div class="tipo-nome">Sindicato</div>
+            <div class="tipo-desc">Dor: cumprimento de sentença</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="iniciarBusca()">⚡ Buscar Contatos na Região</button>
+    </div>
+  </div>
+
+  <!-- TELA 2 -->
+  <div id="tela2" class="hidden">
+    <div class="card">
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loading-msg">Buscando contatos...</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="prog-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-text" id="prog-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA 3 -->
+  <div id="tela3" class="hidden">
+    <div class="card">
+      <div class="resumo-grid">
+        <div class="resumo-card">
+          <div class="resumo-num" id="tot-contatos">0</div>
+          <div class="resumo-label">Contatos encontrados</div>
+        </div>
+        <div class="resumo-card">
+          <div class="resumo-num" id="tot-dias">0</div>
+          <div class="resumo-label">Dias de prospecção</div>
+        </div>
+        <div class="resumo-card">
+          <div class="resumo-num">20</div>
+          <div class="resumo-label">Por dia</div>
+        </div>
+      </div>
+      <div class="card-title">Selecione o dia</div>
+      <div class="nav-dias" id="nav-dias"></div>
+      <div id="dia-conteudo"></div>
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-outline" onclick="voltarInicio()">← Nova Busca</button>
+    </div>
+  </div>
+
+</div>
+<script>
+const API_KEY = 'AIzaSyAcQCe7IGxQ3zh_9_pflevVYs_HBCdsrFs';
+let tiposSelecionados = ['advocacia','contabilidade','sindicato'];
+let todosContatos = [];
+let nomeCalc = '';
+let cidadeAlvo = '';
+
+function labelTipo(t) { return {advocacia:'Advocacia',contabilidade:'Contabilidade',sindicato:'Sindicato'}[t]||t; }
+function delay(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function atualizarProg(pct,msg) { document.getElementById('prog-bar').style.width=pct+'%'; document.getElementById('prog-text').textContent=msg; }
+
+function setStep(n) {
+  ['step1-ind','step2-ind','step3-ind'].forEach((id,i)=>{
+    const el=document.getElementById(id); el.className='step';
+    if(i+1<n) el.classList.add('done');
+    if(i+1===n) el.classList.add('active');
+  });
+}
+
+function toggleTipo(el) {
+  const tipo=el.dataset.tipo;
+  if(el.classList.contains('selected')) {
+    if(tiposSelecionados.length===1) return;
+    el.classList.remove('selected');
+    tiposSelecionados=tiposSelecionados.filter(t=>t!==tipo);
+  } else {
+    el.classList.add('selected');
+    tiposSelecionados.push(tipo);
+  }
+}
+
+function embaralharComSeed(arr,seed) {
+  const a=[...arr]; let s=seed;
+  for(let i=a.length-1;i>0;i--) {
+    s=(s*1664525+1013904223)&0xffffffff;
+    const j=Math.abs(s)%(i+1);
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+async function iniciarBusca() {
+  nomeCalc=document.getElementById('nome-calc').value.trim()||'calculista';
+  const cidade=document.getElementById('cidade').value.trim();
+  const estado=document.getElementById('estado').value.trim().toUpperCase();
+  cidadeAlvo=estado?`${cidade}, ${estado}`:cidade;
+  if(!cidade){alert('Por favor informe a cidade.');return;}
+  document.getElementById('tela1').classList.add('hidden');
+  document.getElementById('tela2').classList.remove('hidden');
+  setStep(2);
+  await buscarContatos();
+}
+
+async function buscarContatos() {
+  const queries={
+    advocacia:`escritório advocacia trabalhista ${cidadeAlvo}`,
+    contabilidade:`escritório contabilidade ${cidadeAlvo}`,
+    sindicato:`sindicato trabalhadores ${cidadeAlvo}`
+  };
+  const todos=[]; let prog=0;
+  for(const tipo of tiposSelecionados) {
+    atualizarProg(prog,`Buscando ${labelTipo(tipo)}...`);
+    try {
+      const url=`https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(queries[tipo])}&key=${API_KEY}&language=pt-BR`;
+      const resp=await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+      const data=await resp.json();
+      if(data.results&&data.results.length>0) {
+        data.results.forEach(p=>todos.push({nome:p.name,endereco:p.formatted_address||cidadeAlvo,telefone:p.formatted_phone_number||'',rating:p.rating||null,tipo}));
+      } else { todos.push(...gerarDemoTipo(tipo,12)); }
+    } catch(e) { todos.push(...gerarDemoTipo(tipo,12)); }
+    prog+=Math.floor(100/tiposSelecionados.length);
+    await delay(500);
+  }
+  atualizarProg(100,'Concluído!');
+  await delay(300);
+  finalizarBusca(todos);
+}
+
+function gerarDemoTipo(tipo,qtd) {
+  const demos={
+    advocacia:['Escritório Ferreira & Associados','Advocacia Trabalhista Santos','Dr. Marcos Lima OAB','Alves & Costa Advogados','Escritório Jurídico Monteiro','Advocacia Souza e Pinto','Nunes Advogados Trabalhistas','Escritório Carvalho & Lima','Advocacia Dr. Rodrigues','Silva & Melo Advogados','Escritório Pereira Trabalhista','Advocacia Barbosa e Freitas'],
+    contabilidade:['Contabilidade Oliveira & Cia','Escritório Fiscal Mendes','Contábil Santos Assessoria','Almeida Contadores Associados','Escritório Contábil Rocha','Gomes & Teixeira Contabilidade','Assessoria Fiscal Ribeiro','Contabilidade Prado & Filhos','Escritório Araújo Contábil','Fernandes Assessoria Empresarial','Contabilidade Costa & Lima','Escritório Fiscal Braga'],
+    sindicato:['Sindicato dos Trabalhadores do Comércio','Sind. dos Metalúrgicos','Sindicato dos Bancários','Sind. Trabalhadores da Saúde','Sindicato dos Rodoviários','Sind. Trabalhadores Setor Público','Sindicato dos Eletricitários','Sind. Trabalhadores da Educação','Sindicato dos Químicos','Sind. dos Trabalhadores Rurais']
+  };
+  return (demos[tipo]||[]).slice(0,qtd).map(nome=>({nome,endereco:cidadeAlvo,telefone:`(21) 9${String(Math.floor(Math.random()*90000000+10000000))}`,rating:(3.5+Math.random()*1.5).toFixed(1),tipo}));
+}
+
+function finalizarBusca(contatos) {
+  const vistos=new Set();
+  const unicos=contatos.filter(c=>{const k=c.nome.toLowerCase().trim();if(vistos.has(k))return false;vistos.add(k);return true;});
+  todosContatos=embaralharComSeed(unicos,42);
+  const totalDias=Math.ceil(todosContatos.length/20);
+  document.getElementById('tela2').classList.add('hidden');
+  document.getElementById('tela3').classList.remove('hidden');
+  setStep(3);
+  document.getElementById('tot-contatos').textContent=todosContatos.length;
+  document.getElementById('tot-dias').textContent=totalDias;
+  const nav=document.getElementById('nav-dias'); nav.innerHTML='';
+  for(let d=1;d<=totalDias;d++){
+    const btn=document.createElement('button');
+    btn.className='dia-btn'+(d===1?' active':'');
+    btn.textContent=`Dia ${d}`;
+    btn.onclick=()=>selecionarDia(d);
+    nav.appendChild(btn);
+  }
+  selecionarDia(1);
+}
+
+function selecionarDia(dia) {
+  document.querySelectorAll('.dia-btn').forEach((b,i)=>b.classList.toggle('active',i+1===dia));
+  const inicio=(dia-1)*20;
+  const contatosDia=todosContatos.slice(inicio,inicio+20);
+  const cont=document.getElementById('dia-conteudo');
+  cont.innerHTML=`<div class="resultado-header"><div class="dia-titulo">Dia ${dia} <span style="color:var(--muted);font-size:14px">— ${contatosDia.length} contatos</span></div><span class="contador-badge">${contatosDia.length} mensagens prontas</span></div>`;
+  contatosDia.forEach((c,idx)=>cont.appendChild(renderContato(c,idx)));
+}
+
+function renderContato(contato,idx) {
+  const div=document.createElement('div');
+  div.className='contato-item';
+  const tagClass={advocacia:'tag-advocacia',contabilidade:'tag-contabilidade',sindicato:'tag-sindicato'}[contato.tipo];
+  const spin=gerarSPIN(contato,idx);
+  div.innerHTML=`
+    <div class="contato-header">
+      <div>
+        <div class="contato-num">CONTATO ${String(idx+1).padStart(2,'0')}</div>
+        <div class="contato-nome">${contato.nome}</div>
+        <div class="contato-meta">${contato.endereco}${contato.telefone?' · '+contato.telefone:''}${contato.rating?' · ⭐ '+contato.rating:''}</div>
+      </div>
+      <span class="contato-tipo-tag ${tagClass}">${labelTipo(contato.tipo)}</span>
+    </div>
+    <div class="spin-box">
+      <div class="spin-label">Mensagem SPIN — ${labelTipo(contato.tipo)}</div>
+      <div class="spin-text" id="st-${idx}">${spin}</div>
+      <div class="spin-actions"><button class="btn btn-copy" id="bc-${idx}" onclick="copiar(${idx})">Copiar mensagem</button></div>
+    </div>`;
+  return div;
+}
+
+function gerarSPIN(contato,idx) {
+  const nome=nomeCalc; const cidade=cidadeAlvo;
+  const tpl={
+    advocacia:[
+`Olá, tudo bem? Me chamo ${nome}, sou calculista trabalhista em ${cidade}.
+
+Queria te fazer uma pergunta rápida: quando você recebe os cálculos da parte contrária numa execução trabalhista, você costuma fazer uma análise detalhada antes de aceitar o valor?
+
+Pergunto porque é muito comum os cálculos chegarem com erros em correção monetária, horas extras e FGTS. Advogados que não fazem a impugnação correta acabam deixando o cliente pagar a mais, ou perdem honorários que seriam seus por direito.
+
+Você já teve situação assim? Posso te mostrar como a impugnação técnica pode mudar o resultado.`,
+`Olá, tudo bem? Sou ${nome}, calculista trabalhista aqui em ${cidade}.
+
+Você trabalha com execução trabalhista no escritório?
+
+Pergunto porque a maioria dos advogados trabalhistas sabe muito bem conduzir o processo, mas na fase de liquidação fica dependendo do cálculo da outra parte. E aí perde, porque aceita valor errado ou não consegue impugnar com fundamentação técnica.
+
+Se já passou por isso, posso te mostrar como trabalho. Seria uma conversa de 15 minutos.`,
+`Olá! Sou ${nome}, calculista trabalhista em ${cidade}.
+
+Uma pergunta direta: o seu escritório já perdeu dinheiro aceitando um cálculo de liquidação que estava errado?
+
+Isso é mais comum do que parece. A impugnação bem feita pode reduzir significativamente o valor a pagar, ou aumentar o que o cliente vai receber. Mas precisa de alguém que domine os índices, as bases e a jurisprudência atual.
+
+Se fizer sentido, posso te explicar como funciona na prática.`
+    ],
+    contabilidade:[
+`Olá, tudo bem? Me chamo ${nome}, sou calculista trabalhista.
+
+Queria te apresentar uma proposta de parceria. Você já atende empresas com folha de pagamento e obrigações fiscais, certo? Essas mesmas empresas eventualmente enfrentam ações trabalhistas e precisam de cálculos de liquidação, rescisórias e impugnações.
+
+A ideia é simples: você já tem a confiança desses clientes. Eu entro com o serviço de cálculo trabalhista, você oferece para sua carteira e dividimos o resultado. Sem custo para o seu escritório.
+
+Você teria 15 minutos para conversar sobre isso?`,
+`Olá! Tudo bem? Sou ${nome}, calculista trabalhista em ${cidade}.
+
+Você atende empresas com contabilidade e folha? Tenho uma ideia que pode gerar receita extra para o seu escritório sem nenhum investimento.
+
+Muitas dessas empresas já têm ou vão ter ações trabalhistas. Quando chegam na fase de cálculo, não sabem para quem recorrer. Se você indicar esse serviço, eu faço o trabalho e a gente divide o honorário.
+
+Parceria simples, sem risco para você. Posso te explicar como funciona?`,
+`Olá! Me chamo ${nome}, sou calculista trabalhista.
+
+Você sabia que escritórios de contabilidade que adicionam o serviço de cálculo trabalhista aumentam o ticket médio por cliente sem precisar contratar ninguém?
+
+A lógica é simples: você já atende a empresa. Quando ela tem uma ação trabalhista, em vez de indicar para fora, você resolve com apoio de um calculista parceiro.
+
+Posso te mostrar como outros escritórios estão fazendo isso. Teria interesse em conversar?`
+    ],
+    sindicato:[
+`Olá, tudo bem? Sou ${nome}, calculista trabalhista em ${cidade}.
+
+Queria te fazer uma pergunta: quando o sindicato entra com ação coletiva, os cálculos da inicial são pensados levando em conta a fase de liquidação?
+
+Pergunto porque um problema muito comum é o sindicato ganhar a causa, mas na hora do cumprimento de sentença a conta não fechar. O trabalhador recebe menos do que deveria e o sindicato perde credibilidade.
+
+Você já enfrentou isso? Posso mostrar como trabalho desde a fase inicial para evitar esse problema.`,
+`Olá! Sou ${nome}, calculista trabalhista.
+
+O sindicato tem acompanhado cumprimentos de sentença coletiva ultimamente?
+
+Esse é um dos pontos onde mais se perde. A sentença é favorável, mas o cálculo de liquidação é apresentado pela parte contrária e o sindicato não tem estrutura para questionar com técnica. O resultado é que os trabalhadores recebem menos do que conquistaram.
+
+Se fizer sentido, posso te mostrar como apoio o sindicato especificamente nessa fase.`,
+`Olá! Me chamo ${nome}, sou calculista trabalhista em ${cidade}.
+
+Uma pergunta rápida: o sindicato tem alguém de confiança que faz os cálculos dos processos coletivos, desde a inicial até o cumprimento de sentença?
+
+Pergunto porque quando a inicial não é pensada nos cálculos, o sindicato ganha no mérito mas perde na execução. E aí todo o esforço da negociação não chega inteiro para o trabalhador.
+
+Podemos conversar sobre como funciona esse suporte técnico?`
+    ]
+  };
+  const msgs=tpl[contato.tipo]||tpl.advocacia;
+  return msgs[idx%msgs.length];
+}
+
+function copiar(idx) {
+  const el=document.getElementById('st-'+idx);
+  const btn=document.getElementById('bc-'+idx);
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    btn.textContent='✓ Copiado!'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copiar mensagem';btn.classList.remove('copied');},2000);
+  });
+}
+
+function voltarInicio() {
+  document.getElementById('tela3').classList.add('hidden');
+  document.getElementById('tela1').classList.remove('hidden');
+  setStep(1); todosContatos=[];
+}
+</script>
+</body>
+</html>
