@@ -3,138 +3,528 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculista de Valor — Prospecção</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Calculista de Valor . Prospeccao</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #04070f;
-    --surface: #080e1a;
-    --surface2: #0c1422;
-    --border: #101d35;
-    --border2: #162545;
-    --green: #1a6bff;
-    --green2: #0052e0;
-    --green-dim: #0a3a8a;
-    --green-glow: rgba(26,107,255,0.08);
-    --green-glow2: rgba(26,107,255,0.15);
-    --text: #e8f0ff;
-    --muted: #5a7099;
-    --cyan: #00e5ff;
-    --red: #ff1744;
+    /* OKLCH palette, hue 215 (azul oceano, commercial). Tinted neutrals. */
+    --bg:           oklch(0.975 0.006 215);
+    --surface:      oklch(0.995 0.004 215);
+    --surface-2:    oklch(0.960 0.008 215);
+    --border:       oklch(0.900 0.012 215);
+    --border-soft:  oklch(0.940 0.010 215);
+    --text:         oklch(0.22 0.025 215);
+    --text-muted:   oklch(0.50 0.018 215);
+    --text-soft:    oklch(0.65 0.014 215);
+
+    /* Committed accent. Used on actions, focus, key emphasis. */
+    --primary:       oklch(0.48 0.150 235);
+    --primary-hover: oklch(0.42 0.150 235);
+    --primary-soft:  oklch(0.58 0.120 230);
+    --primary-tint:  oklch(0.94 0.030 230);
+    --on-primary:    oklch(0.985 0.006 230);
+
+    /* Semantic accents for the three contact lanes. */
+    --advo:        oklch(0.50 0.155 235);
+    --advo-tint:   oklch(0.955 0.030 235);
+    --advo-border: oklch(0.86 0.060 235);
+    --conta:       oklch(0.50 0.130 175);
+    --conta-tint:  oklch(0.955 0.030 175);
+    --conta-border:oklch(0.86 0.050 175);
+    --sind:        oklch(0.55 0.170 28);
+    --sind-tint:   oklch(0.960 0.030 28);
+    --sind-border: oklch(0.86 0.055 28);
+    --ok:          oklch(0.58 0.140 150);
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 14px;
+
+    --shadow-1: 0 1px 2px oklch(0.20 0.02 215 / 0.05);
+    --shadow-2: 0 4px 18px oklch(0.20 0.02 215 / 0.07);
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    line-height: 1.55;
     min-height: 100vh;
-    overflow-x: hidden;
   }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(26,107,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(26,107,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(26,107,255,0.07) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
-  .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 36px 20px 80px; }
 
-  header { margin-bottom: 40px; }
-  .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-  .logo-icon { width: 44px; height: 44px; background: var(--green-glow2); border: 1px solid var(--green-dim); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-  .logo-text { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: var(--green); letter-spacing: 0.05em; text-transform: uppercase; }
-  .logo-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-  h1 { font-family: 'Rajdhani', sans-serif; font-size: clamp(32px, 6vw, 54px); font-weight: 700; line-height: 1.05; color: var(--text); margin-bottom: 10px; letter-spacing: 0.02em; text-transform: uppercase; }
-  h1 .hl { color: var(--green); text-shadow: 0 0 30px rgba(26,107,255,0.4); }
-  .subtitle { color: var(--muted); font-size: 14px; max-width: 520px; line-height: 1.7; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-7); }
 
-  .steps { display: flex; margin-bottom: 32px; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; background: var(--surface); }
-  .step { flex: 1; padding: 11px 16px; text-align: center; font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-right: 1px solid var(--border2); transition: all 0.3s; }
+  /* ---------- Header ---------- */
+  header { margin-bottom: var(--space-6); }
+  .logo-row { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: var(--primary-tint);
+    border: 1px solid oklch(0.88 0.040 230);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    color: var(--primary);
+  }
+  .logo-text {
+    font-size: 14px; font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.005em;
+  }
+  .logo-sub {
+    font-size: 11.5px; color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 1px;
+  }
+  h1 {
+    font-size: clamp(28px, 4.6vw, 40px);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: var(--space-3);
+  }
+  h1 .hl { color: var(--primary); }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 56ch;
+    line-height: 1.6;
+  }
+
+  /* ---------- Step indicator ---------- */
+  .steps {
+    display: flex;
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .step {
+    flex: 1;
+    padding: var(--space-3) var(--space-4);
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-right: 1px solid var(--border-soft);
+    transition: color .15s ease-out, background .15s ease-out;
+    font-variant-numeric: tabular-nums;
+  }
   .step:last-child { border-right: none; }
-  .step.active { background: var(--green-glow2); color: var(--green); }
-  .step.done { color: var(--green-dim); }
+  .step.active {
+    background: var(--primary-tint);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .step.done { color: var(--text-soft); }
 
-  .card { background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
-  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: 0.4; }
-  .card-title { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green); margin-bottom: 22px; display: flex; align-items: center; gap: 8px; }
-  .card-title::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+  /* ---------- Card ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-6) var(--space-5);
+    margin-bottom: var(--space-4);
+    box-shadow: var(--shadow-1);
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-soft);
+  }
 
-  label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-  input[type="text"] { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; padding: 12px 16px; outline: none; transition: all 0.2s; }
-  input[type="text"]:focus { border-color: var(--green-dim); box-shadow: 0 0 0 3px var(--green-glow); }
-  input[type="text"]::placeholder { color: var(--muted); opacity: 0.4; }
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+  /* ---------- Form ---------- */
+  label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: var(--space-2);
+  }
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font: inherit;
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type="text"]:focus {
+    border-color: var(--primary-soft);
+    box-shadow: 0 0 0 3px var(--primary-tint);
+  }
+  input[type="text"]::placeholder { color: var(--text-soft); }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
   @media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
 
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px 28px; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s; }
-  .btn-primary { background: var(--green); color: #f0f4ff; width: 100%; margin-top: 24px; box-shadow: 0 0 20px rgba(26,107,255,0.2); }
-  .btn-primary:hover { background: var(--green2); box-shadow: 0 0 30px rgba(26,107,255,0.35); transform: translateY(-1px); }
-  .btn-outline { background: transparent; color: var(--green); border: 1px solid var(--green-dim); padding: 9px 20px; font-size: 12px; }
-  .btn-outline:hover { background: var(--green-glow); }
-  .btn-copy { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); padding: 7px 16px; font-size: 11px; border-radius: 3px; font-family: 'Rajdhani', sans-serif; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-  .btn-copy:hover { border-color: var(--green-dim); color: var(--green); }
-  .btn-copy.copied { background: var(--green-glow2); color: var(--green); border-color: var(--green); }
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font: 500 14px/1 "Inter", sans-serif;
+    padding: 11px 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: background .15s ease-out, border-color .15s ease-out, transform .08s ease-out, box-shadow .15s;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--text-soft); }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
+    background: var(--primary);
+    color: var(--on-primary);
+    border-color: var(--primary);
+    width: 100%;
+    margin-top: var(--space-5);
+    padding: 14px 24px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .btn-primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .btn-outline:hover { background: var(--primary-tint); border-color: var(--primary); }
+  .btn-copy {
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+  }
+  .btn-copy:hover {
+    border-color: var(--primary-soft);
+    color: var(--primary);
+    background: var(--primary-tint);
+  }
+  .btn-copy.copied {
+    background: oklch(0.96 0.030 150);
+    color: oklch(0.40 0.110 150);
+    border-color: oklch(0.80 0.080 150);
+  }
 
-  .tipo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  /* ---------- Tipo cards (lane selector) ---------- */
+  .tipo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
   @media (max-width: 500px) { .tipo-grid { grid-template-columns: 1fr; } }
-  .tipo-card { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; padding: 18px 12px; cursor: pointer; transition: all 0.2s; text-align: center; position: relative; }
-  .tipo-card:hover { border-color: var(--green-dim); }
-  .tipo-card.selected { border-color: var(--green); background: var(--green-glow); box-shadow: 0 0 12px rgba(26,107,255,0.1); }
-  .tipo-card.selected::after { content: '✓'; position: absolute; top: 8px; right: 10px; font-size: 11px; color: var(--green); font-weight: 700; }
-  .tipo-icon { font-size: 26px; margin-bottom: 10px; }
-  .tipo-nome { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text); margin-bottom: 5px; }
-  .tipo-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .tipo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-4) var(--space-3);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    text-align: left;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .tipo-card:hover { border-color: var(--text-soft); background: var(--surface-2); }
+  .tipo-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-tint);
+  }
+  .tipo-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .tipo-icon { font-size: 22px; line-height: 1; }
+  .tipo-nome {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.005em;
+  }
+  .tipo-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
 
-  .loading-wrap { text-align: center; padding: 52px 20px; }
-  .spinner { width: 40px; height: 40px; border: 2px solid var(--border2); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 20px; box-shadow: 0 0 15px rgba(26,107,255,0.15); }
+  /* ---------- Loading state ---------- */
+  .loading-wrap { text-align: center; padding: var(--space-7) var(--space-5); }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.7s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    margin: 0 auto var(--space-4);
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { color: var(--muted); font-size: 13px; letter-spacing: 0.05em; }
-  .progress-bar-wrap { background: var(--border2); border-radius: 1px; height: 2px; max-width: 280px; margin: 16px auto 0; overflow: hidden; }
-  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green-dim), var(--green)); transition: width 0.4s ease; box-shadow: 0 0 8px var(--green); }
-  .progress-text { font-size: 11px; color: var(--muted); margin-top: 8px; }
+  .loading-text { color: var(--text-muted); font-size: 13.5px; font-weight: 500; }
+  .progress-bar-wrap {
+    background: var(--border-soft);
+    border-radius: 999px;
+    height: 4px;
+    max-width: 280px;
+    margin: var(--space-4) auto 0;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    border-radius: 999px;
+  }
+  .progress-text { font-size: 12px; color: var(--text-soft); margin-top: var(--space-2); }
 
-  .resumo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-  @media (max-width: 500px) { .resumo-grid { grid-template-columns: 1fr; } }
-  .resumo-card { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; padding: 18px; text-align: center; }
-  .resumo-num { font-family: 'Rajdhani', sans-serif; font-size: 36px; font-weight: 700; color: var(--green); text-shadow: 0 0 20px rgba(26,107,255,0.3); line-height: 1; }
-  .resumo-label { font-size: 11px; color: var(--muted); margin-top: 5px; }
+  /* ---------- Summary cards (resumo) ---------- */
+  .resumo-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+  }
+  @media (max-width: 560px) { .resumo-grid { grid-template-columns: 1fr; } }
+  .resumo-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .resumo-num {
+    font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    font-size: 30px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+  .resumo-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
 
-  .nav-dias { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-  .dia-btn { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 7px 16px; border-radius: 3px; border: 1px solid var(--border2); background: var(--bg); color: var(--muted); cursor: pointer; transition: all 0.2s; }
-  .dia-btn.active { border-color: var(--green); color: var(--green); background: var(--green-glow); }
-  .dia-btn:hover:not(.active) { border-color: var(--green-dim); color: var(--text); }
+  /* ---------- Day nav ---------- */
+  .nav-dias {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-5);
+  }
+  .dia-btn {
+    font: 500 13px/1 "Inter", sans-serif;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .dia-btn.active {
+    border-color: var(--primary);
+    color: var(--on-primary);
+    background: var(--primary);
+    font-weight: 600;
+  }
+  .dia-btn:hover:not(.active) {
+    border-color: var(--text-soft);
+    color: var(--text);
+    background: var(--surface-2);
+  }
 
-  .resultado-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-  .dia-titulo { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-  .contador-badge { background: var(--green-glow); border: 1px solid var(--green-dim); color: var(--green); font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; padding: 5px 14px; border-radius: 2px; }
+  /* ---------- Result header ---------- */
+  .resultado-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .dia-titulo {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .contador-badge {
+    background: var(--primary-tint);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
 
-  .contato-item { background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; padding: 18px; margin-bottom: 14px; transition: border-color 0.2s; }
-  .contato-item:hover { border-color: var(--green-dim); }
-  .contato-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
-  .contato-num { font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700; color: var(--green-dim); letter-spacing: 0.1em; margin-bottom: 3px; }
-  .contato-nome { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 16px; color: var(--text); line-height: 1.2; }
-  .contato-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .contato-tipo-tag { font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
-  .tag-advocacia { background: rgba(0,229,255,0.08); color: var(--cyan); border: 1px solid rgba(0,229,255,0.2); }
-  .tag-contabilidade { background: rgba(0,230,118,0.08); color: var(--green); border: 1px solid rgba(26,107,255,0.2); }
-  .tag-sindicato { background: rgba(255,23,68,0.08); color: var(--red); border: 1px solid rgba(255,23,68,0.2); }
+  /* ---------- Contato item ---------- */
+  .contato-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-4) var(--space-5);
+    margin-bottom: var(--space-3);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .contato-item:hover {
+    border-color: var(--text-soft);
+    box-shadow: var(--shadow-1);
+  }
+  .contato-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .contato-num {
+    font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-soft);
+    letter-spacing: 0.04em;
+    margin-bottom: var(--space-1);
+  }
+  .contato-nome {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+  }
+  .contato-meta {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: var(--space-1);
+    line-height: 1.45;
+  }
+  .contato-tipo-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border: 1px solid;
+  }
+  .tag-advocacia {
+    background: var(--advo-tint);
+    color: var(--advo);
+    border-color: var(--advo-border);
+  }
+  .tag-contabilidade {
+    background: var(--conta-tint);
+    color: var(--conta);
+    border-color: var(--conta-border);
+  }
+  .tag-sindicato {
+    background: var(--sind-tint);
+    color: var(--sind);
+    border-color: var(--sind-border);
+  }
 
-  .spin-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 2px solid var(--green); border-radius: 0 4px 4px 0; padding: 14px 18px; margin-top: 12px; }
-  .spin-label { font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; opacity: 0.7; }
-  .spin-text { font-size: 13px; color: var(--text); line-height: 1.75; white-space: pre-wrap; opacity: 0.9; }
-  .spin-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+  /* ---------- SPIN box ---------- */
+  /* Full border + leading marker dot. No side-stripe. */
+  .spin-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    margin-top: var(--space-3);
+  }
+  .spin-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: var(--space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .spin-label::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+  .spin-text {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.65;
+    white-space: pre-wrap;
+  }
+  .spin-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-3);
+  }
 
   .hidden { display: none !important; }
 </style>
@@ -144,20 +534,20 @@
 
   <header>
     <div class="logo-row">
-      <div class="logo-icon">⚡</div>
+      <div class="logo-icon">CV</div>
       <div>
         <div class="logo-text">Calculista de Valor</div>
-        <div class="logo-sub">Módulo de Prospecção</div>
+        <div class="logo-sub">Modulo de Prospeccao</div>
       </div>
     </div>
-    <h1>Prospecção <span class="hl">Inteligente</span></h1>
+    <h1>Prospeccao <span class="hl">inteligente</span> para calculistas</h1>
     <p class="subtitle">Levante contatos da sua cidade e receba mensagens SPIN prontas para advogados, contadores e sindicatos.</p>
   </header>
 
   <div class="steps">
-    <div class="step active" id="step1-ind">01 — Configurar</div>
-    <div class="step" id="step2-ind">02 — Buscar</div>
-    <div class="step" id="step3-ind">03 — Mensagens</div>
+    <div class="step active" id="step1-ind">01. Configurar</div>
+    <div class="step" id="step2-ind">02. Buscar</div>
+    <div class="step" id="step3-ind">03. Mensagens</div>
   </div>
 
   <!-- TELA 1 -->
@@ -165,15 +555,15 @@
     <div class="card">
       <div class="card-title">Seus dados</div>
       <label>Seu nome</label>
-      <input type="text" id="nome-calc" placeholder="Ex: João Silva">
+      <input type="text" id="nome-calc" placeholder="Ex: Joao Silva">
       <div class="field-row">
         <div>
           <label>Cidade alvo</label>
-          <input type="text" id="cidade" placeholder="Ex: Niterói">
+          <input type="text" id="cidade" placeholder="Ex: Niteroi">
         </div>
         <div>
           <label>Estado (sigla)</label>
-          <input type="text" id="estado" placeholder="Ex: RJ" maxlength="2" style="text-transform:uppercase">
+          <input type="text" id="estado" placeholder="RJ" maxlength="2" style="text-transform:uppercase">
         </div>
       </div>
       <div style="margin-top:28px">
@@ -182,21 +572,21 @@
           <div class="tipo-card selected" data-tipo="advocacia" onclick="toggleTipo(this)">
             <div class="tipo-icon">⚖️</div>
             <div class="tipo-nome">Advocacia</div>
-            <div class="tipo-desc">Trabalhista. Dor: perda na impugnação</div>
+            <div class="tipo-desc">Trabalhista. Dor: perda na impugnacao.</div>
           </div>
           <div class="tipo-card selected" data-tipo="contabilidade" onclick="toggleTipo(this)">
             <div class="tipo-icon">📊</div>
             <div class="tipo-nome">Contabilidade</div>
-            <div class="tipo-desc">Parceria. Já tem os clientes</div>
+            <div class="tipo-desc">Parceria. Ja tem os clientes.</div>
           </div>
           <div class="tipo-card selected" data-tipo="sindicato" onclick="toggleTipo(this)">
             <div class="tipo-icon">🏛️</div>
             <div class="tipo-nome">Sindicato</div>
-            <div class="tipo-desc">Dor: cumprimento de sentença</div>
+            <div class="tipo-desc">Dor: cumprimento de sentenca.</div>
           </div>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="iniciarBusca()">⚡ Buscar Contatos na Região</button>
+      <button class="btn btn-primary" onclick="iniciarBusca()">Buscar contatos na regiao</button>
     </div>
   </div>
 
@@ -224,7 +614,7 @@
         </div>
         <div class="resumo-card">
           <div class="resumo-num" id="tot-dias">0</div>
-          <div class="resumo-label">Dias de prospecção</div>
+          <div class="resumo-label">Dias de prospeccao</div>
         </div>
         <div class="resumo-card">
           <div class="resumo-num">20</div>
@@ -236,7 +626,7 @@
       <div id="dia-conteudo"></div>
     </div>
     <div style="text-align:center;margin-top:16px">
-      <button class="btn btn-outline" onclick="voltarInicio()">← Nova Busca</button>
+      <button class="btn btn-outline" onclick="voltarInicio()">Nova busca</button>
     </div>
   </div>
 
@@ -314,7 +704,7 @@ async function buscarContatos() {
     prog+=Math.floor(100/tiposSelecionados.length);
     await delay(500);
   }
-  atualizarProg(100,'Concluído!');
+  atualizarProg(100,'Concluido!');
   await delay(300);
   finalizarBusca(todos);
 }
@@ -354,7 +744,7 @@ function selecionarDia(dia) {
   const inicio=(dia-1)*20;
   const contatosDia=todosContatos.slice(inicio,inicio+20);
   const cont=document.getElementById('dia-conteudo');
-  cont.innerHTML=`<div class="resultado-header"><div class="dia-titulo">Dia ${dia} <span style="color:var(--muted);font-size:14px">— ${contatosDia.length} contatos</span></div><span class="contador-badge">${contatosDia.length} mensagens prontas</span></div>`;
+  cont.innerHTML=`<div class="resultado-header"><div class="dia-titulo">Dia ${dia} <span style="color:var(--text-soft);font-size:14px;font-weight:500"> . ${contatosDia.length} contatos</span></div><span class="contador-badge">${contatosDia.length} mensagens prontas</span></div>`;
   contatosDia.forEach((c,idx)=>cont.appendChild(renderContato(c,idx)));
 }
 
@@ -373,7 +763,7 @@ function renderContato(contato,idx) {
       <span class="contato-tipo-tag ${tagClass}">${labelTipo(contato.tipo)}</span>
     </div>
     <div class="spin-box">
-      <div class="spin-label">Mensagem SPIN — ${labelTipo(contato.tipo)}</div>
+      <div class="spin-label">Mensagem SPIN . ${labelTipo(contato.tipo)}</div>
       <div class="spin-text" id="st-${idx}">${spin}</div>
       <div class="spin-actions"><button class="btn btn-copy" id="bc-${idx}" onclick="copiar(${idx})">Copiar mensagem</button></div>
     </div>`;
